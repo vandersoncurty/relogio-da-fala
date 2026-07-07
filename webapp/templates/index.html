@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="clock-container">
+    <!-- Canvas do Relógio -->
+    <div class="clock-wrapper">
+        <canvas id="clockCanvas" width="600" height="600"></canvas>
+    </div>
+
+    <!-- Painel de Controle -->
+    <div class="control-panel">
+        <!-- Mensagem Atual -->
+        <div class="message-card" id="messageCard">
+            <div class="message-label">Mensagem Selecionada</div>
+            <div class="message-text" id="messageText">Selecione dois símbolos</div>
+            <div class="message-status" id="messageStatus">
+                <span class="status-dot"></span>
+                <span class="status-text">Aguardando</span>
+            </div>
+        </div>
+
+        <!-- Botão de Voz -->
+        <button class="voice-btn" id="voiceBtn" disabled>
+            <svg class="voice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+            </svg>
+            <span>Falar</span>
+        </button>
+
+        <!-- Instruções -->
+        <div class="instructions">
+            <h3>Como usar</h3>
+            <ul>
+                <li><strong>Ponteiro 1 (azul):</strong> Clique em um símbolo</li>
+                <li><strong>Ponteiro 2 (vermelho):</strong> Clique em outro símbolo</li>
+                <li><strong>Voz:</strong> Pressione o botão ou <kbd>Espaço</kbd></li>
+            </ul>
+        </div>
+
+        <!-- Legenda -->
+        <div class="legend">
+            <h3>Categorias</h3>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #3b82f6;"></span>
+                    <span>Sujeitos</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #22c55e;"></span>
+                    <span>Verbos</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #f97316;"></span>
+                    <span>Objetos</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #a855f7;"></span>
+                    <span>Emoções</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Combinações Rápidas -->
+        <div class="quick-phrases">
+            <h3>Frases Rápidas</h3>
+            <div class="phrase-chips" id="phraseChips">
+                <!-- Preenchido via JavaScript -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
