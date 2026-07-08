@@ -8,12 +8,16 @@ Aplicação Flask com interface responsiva e design moderno.
 import sys
 import os
 import tempfile
+import requests
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from flask import Flask, render_template, jsonify, request, send_file
 from gramatica import POSICOES_PLACA, COMBINACOES_VALIDAS, TRADUCAO, obter_frase
 
 app = Flask(__name__)
+
+# URL da API VLibras
+VLIBRAS_API_URL = "https://traducao2.vlibras.gov.br/translate"
 
 
 @app.route("/")
@@ -104,6 +108,45 @@ def api_falar():
                          download_name="fala.mp3")
     except Exception as e:
         return jsonify({"erro": f"Erro ao gerar áudio: {str(e)}"}), 500
+
+
+@app.route("/api/traduzir-libras")
+def api_traduzir_libras():
+    """
+    Traduz texto para Libras usando a API VLibras.
+
+    Query params:
+        texto: texto em português para traduzir
+    """
+    texto = request.args.get("texto", "")
+
+    if not texto:
+        return jsonify({"erro": "Parâmetro 'texto' é obrigatório"}), 400
+
+    try:
+        response = requests.post(
+            VLIBRAS_API_URL,
+            json={"text": texto, "from": "pt-br"},
+            timeout=10
+        )
+
+        if response.status_code == 200:
+            glosa = response.text.strip()
+            return jsonify({
+                "texto_original": texto,
+                "glosa_libras": glosa,
+                "sucesso": True
+            })
+        else:
+            return jsonify({
+                "erro": f"Erro na API VLibras: {response.status_code}",
+                "sucesso": False
+            }), 500
+    except requests.exceptions.RequestException as e:
+        return jsonify({
+            "erro": f"Erro de conexão com VLibras: {str(e)}",
+            "sucesso": False
+        }), 500
 
 
 if __name__ == "__main__":

@@ -563,6 +563,7 @@ function atualizarMensagem() {
     messageText.textContent = mensagem;
     
     messageCard.classList.remove('valid', 'invalid');
+    
     if (valida) {
         messageCard.classList.add('valid');
         messageStatus.querySelector('.status-text').textContent = 'Válida';
