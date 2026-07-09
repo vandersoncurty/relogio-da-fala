@@ -9,6 +9,9 @@
 // CONFIGURAÇÕES
 // ============================================================
 
+// Tamanho base do canvas (será escalado)
+const CANVAS_TAMANHO_BASE = 600;
+
 const CONFIG = {
     raio: 220,
     raioSimbolo: 185,
@@ -171,23 +174,22 @@ let anguloPonteiro1 = 0;
 let anguloPonteiro2 = 0;
 let mensagem = '';
 let valida = false;
+let modoPictograma = false;
+let pictogramas = {};
+let imagensPictogramas = {};
 
 // ============================================================
 // INICIALIZAÇÃO
 // ============================================================
 
+let escala = 1;
+
 document.addEventListener('DOMContentLoaded', () => {
     canvas = document.getElementById('clockCanvas');
     ctx = canvas.getContext('2d');
     
-    // Ajustar tamanho do canvas para DPI
-    const dpr = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    ctx.scale(dpr, dpr);
-    canvas.style.width = rect.width + 'px';
-    canvas.style.height = rect.height + 'px';
+    // Configurar canvas responsivo
+    configurarCanvas();
     
     // Calcular posições dos símbolos
     calcularPosicoes();
@@ -220,12 +222,53 @@ document.addEventListener('DOMContentLoaded', () => {
     // Botão de voz
     document.getElementById('voiceBtn').addEventListener('click', falar);
     
+    // Botão de toggle pictograma
+    document.getElementById('togglePictograma').addEventListener('click', alternarModoPictograma);
+    
     // Carregar frases rápidas
     carregarFrasesRapidas();
+    
+    // Carregar pictogramas
+    carregarPictogramas();
+    
+    // Redimensionar com janela
+    window.addEventListener('resize', () => {
+        configurarCanvas();
+        calcularPosicoes();
+        desenhar();
+    });
     
     // Desenhar
     desenhar();
 });
+
+function configurarCanvas() {
+    const container = canvas.parentElement;
+    const containerWidth = container.clientWidth - 40; // padding
+    const tamanho = Math.min(containerWidth, 600);
+    
+    // Definir tamanho do canvas
+    canvas.style.width = tamanho + 'px';
+    canvas.style.height = tamanho + 'px';
+    
+    // DPI para nitidez
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = tamanho * dpr;
+    canvas.height = tamanho * dpr;
+    ctx.scale(dpr, dpr);
+    
+    // Calcular escala
+    escala = tamanho / CANVAS_TAMANHO_BASE;
+    
+    // Atualizar CONFIG com base na escala
+    CONFIG.raio = 220 * escala;
+    CONFIG.raioSimbolo = 185 * escala;
+    CONFIG.raioPonteiro1 = 140 * escala;
+    CONFIG.raioPonteiro2 = 200 * escala;
+    CONFIG.centroX = 300 * escala;
+    CONFIG.centroY = 300 * escala;
+    CONFIG.raioClique = 30 * escala;
+}
 
 // ============================================================
 // CÁLCULO DE POSIÇÕES
@@ -268,7 +311,7 @@ function desenhar() {
 function desenharFundo() {
     // Círculo externo
     ctx.beginPath();
-    ctx.arc(CONFIG.centroX, CONFIG.centroY, CONFIG.raio + 20, 0, Math.PI * 2);
+    ctx.arc(CONFIG.centroX, CONFIG.centroY, CONFIG.raio + 20 * escala, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(30, 41, 59, 0.5)';
     ctx.fill();
     
@@ -278,7 +321,7 @@ function desenharFundo() {
     ctx.fillStyle = CONFIG.cores.fundo;
     ctx.fill();
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2 * escala;
     ctx.stroke();
 }
 
@@ -329,28 +372,42 @@ function desenharSimbolos() {
         
         // Destaque se selecionado
         const selecionado = (i === ponteiro1 || i === ponteiro2);
+        const raio = selecionado ? 28 * escala : 24 * escala;
         
         // Círculo do símbolo
         ctx.beginPath();
-        ctx.arc(x, y, selecionado ? 28 : 24, 0, Math.PI * 2);
+        ctx.arc(x, y, raio, 0, Math.PI * 2);
         ctx.fillStyle = selecionado ? cor : 'rgba(30, 41, 59, 0.9)';
         ctx.fill();
         ctx.strokeStyle = cor;
-        ctx.lineWidth = selecionado ? 3 : 2;
+        ctx.lineWidth = selecionado ? 3 * escala : 2 * escala;
         ctx.stroke();
         
-        // Texto
-        ctx.fillStyle = selecionado ? '#ffffff' : cor;
-        ctx.font = `bold ${selecionado ? '11px' : '10px'} Inter, sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        
-        // Ajustar tamanho do texto para símbolos longos
-        if (simbolo.length > 5) {
-            ctx.font = `bold ${selecionado ? '9px' : '8px'} Inter, sans-serif`;
+        // Modo pictograma: desenhar imagem se disponível
+        if (modoPictograma && imagensPictogramas[simbolo]) {
+            const img = imagensPictogramas[simbolo];
+            const imgSize = raio * 1.4;
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(x, y, raio - 2 * escala, 0, Math.PI * 2);
+            ctx.clip();
+            ctx.drawImage(img, x - imgSize/2, y - imgSize/2, imgSize, imgSize);
+            ctx.restore();
+        } else {
+            // Modo texto: desenhar palavra
+            ctx.fillStyle = selecionado ? '#ffffff' : cor;
+            const fontSize = selecionado ? 11 * escala : 10 * escala;
+            ctx.font = `bold ${fontSize}px Inter, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // Ajustar tamanho do texto para símbolos longos
+            if (simbolo.length > 5) {
+                ctx.font = `bold ${fontSize * 0.85}px Inter, sans-serif`;
+            }
+            
+            ctx.fillText(simbolo, x, y);
         }
-        
-        ctx.fillText(simbolo, x, y);
     }
 }
 
@@ -363,19 +420,19 @@ function desenharPonteiro(angulo, raio, cor, label) {
     ctx.moveTo(CONFIG.centroX, CONFIG.centroY);
     ctx.lineTo(x, y);
     ctx.strokeStyle = cor;
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 3 * escala;
     ctx.lineCap = 'round';
     ctx.stroke();
     
     // Ponta
     ctx.beginPath();
-    ctx.arc(x, y, 8, 0, Math.PI * 2);
+    ctx.arc(x, y, 8 * escala, 0, Math.PI * 2);
     ctx.fillStyle = cor;
     ctx.fill();
     
     // Label
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 10px Inter, sans-serif';
+    ctx.font = `bold ${10 * escala}px Inter, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(label, x, y);
@@ -384,11 +441,11 @@ function desenharPonteiro(angulo, raio, cor, label) {
 function desenharCentro() {
     // Círculo central
     ctx.beginPath();
-    ctx.arc(CONFIG.centroX, CONFIG.centroY, 15, 0, Math.PI * 2);
+    ctx.arc(CONFIG.centroX, CONFIG.centroY, 15 * escala, 0, Math.PI * 2);
     ctx.fillStyle = '#1e293b';
     ctx.fill();
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2 * escala;
     ctx.stroke();
 }
 
@@ -681,4 +738,40 @@ function carregarFrasesRapidas() {
         });
         container.appendChild(chip);
     });
+}
+
+// ============================================================
+// PICTOGRAMAS (ARASAAC)
+// ============================================================
+
+function carregarPictogramas() {
+    fetch('/api/pictogramas')
+        .then(response => response.json())
+        .then(data => {
+            pictogramas = data;
+            console.log('Pictogramas carregados:', Object.keys(pictogramas).length);
+            // Pré-carregar imagens
+            Object.entries(pictogramas).forEach(([simbolo, info]) => {
+                if (info.url) {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.src = info.url;
+                    img.onload = () => {
+                        imagensPictogramas[simbolo] = img;
+                        if (modoPictograma) desenhar();
+                    };
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Erro ao carregar pictogramas:', error);
+        });
+}
+
+function alternarModoPictograma() {
+    modoPictograma = !modoPictograma;
+    const btn = document.getElementById('togglePictograma');
+    btn.classList.toggle('active', modoPictograma);
+    btn.textContent = modoPictograma ? '📝 Texto' : '🖼️ Pictogramas';
+    desenhar();
 }

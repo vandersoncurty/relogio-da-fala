@@ -19,6 +19,31 @@ app = Flask(__name__)
 # URL da API VLibras
 VLIBRAS_API_URL = "https://traducao2.vlibras.gov.br/translate"
 
+# URL da API ARASAAC
+ARASAAC_API_URL = "https://api.arasaac.org/v1"
+ARASAAC_STATIC_URL = "https://static.arasaac.org/pictograms"
+
+# Mapeamento dos símbolos para buscas ARASAAC (em espanhol)
+# Formato: "SÍMBOLO": {"busca": "termo", "id": id_opcional}
+ARASAAC_MAP = {
+    "EU": {"busca": "yo", "id": 6632},
+    "VOCÊ": {"busca": "tú", "id": 6625},
+    "SIM": {"busca": "sí", "id": 5584},
+    "NÃO": {"busca": "no", "id": 5526},
+    "QUERO": {"busca": "querer", "id": 5441},
+    "PRECISO": {"busca": "necesitar", "id": 37160},
+    "COMER": {"busca": "comer", "id": 6456},
+    "BEBER": {"busca": "beber", "id": 6061},
+    "ÁGUA": {"busca": "agua", "id": 32464},
+    "COMIDA": {"busca": "comida", "id": 4610},
+    "BANHEIRO": {"busca": "baño", "id": 6929},
+    "SAIR": {"busca": "salir", "id": 2806},
+    "FELIZ": {"busca": "feliz", "id": 9907},
+    "TRISTE": {"busca": "triste", "id": 35545},
+    "DOR": {"busca": "dolor", "id": 2367},
+    "AJUDA": {"busca": "ayuda", "id": 12252}
+}
+
 
 @app.route("/")
 def index():
@@ -147,6 +172,58 @@ def api_traduzir_libras():
             "erro": f"Erro de conexão com VLibras: {str(e)}",
             "sucesso": False
         }), 500
+
+
+@app.route("/api/pictogramas")
+def api_pictogramas():
+    """
+    Busca pictogramas na API ARASAAC para todos os símbolos da placa.
+
+    Retorna um mapa de símbolo → {id, url} para uso no frontend.
+    """
+    resultados = {}
+
+    for simbolo, info in ARASAAC_MAP.items():
+        busca = info["busca"]
+        picto_id = info.get("id")
+
+        # Se ID fixo foi definido, usar diretamente
+        if picto_id:
+            resultados[simbolo] = {
+                "id": picto_id,
+                "url": f"{ARASAAC_STATIC_URL}/{picto_id}/{picto_id}_300.png",
+                "busca": busca
+            }
+            continue
+
+        # Caso contrário, buscar na API
+        try:
+            response = requests.get(
+                f"{ARASAAC_API_URL}/pictograms/es/search/{busca}",
+                timeout=5
+            )
+
+            if response.status_code == 200:
+                data = response.json()
+                if data and len(data) > 0:
+                    pictogram = data[0]
+                    picto_id = pictogram.get("_id")
+                    if picto_id:
+                        resultados[simbolo] = {
+                            "id": picto_id,
+                            "url": f"{ARASAAC_STATIC_URL}/{picto_id}/{picto_id}_300.png",
+                            "busca": busca
+                        }
+                    else:
+                        resultados[simbolo] = {"id": None, "url": None, "busca": busca}
+                else:
+                    resultados[simbolo] = {"id": None, "url": None, "busca": busca}
+            else:
+                resultados[simbolo] = {"id": None, "url": None, "busca": busca}
+        except requests.exceptions.RequestException:
+            resultados[simbolo] = {"id": None, "url": None, "busca": busca}
+
+    return jsonify(resultados)
 
 
 if __name__ == "__main__":
