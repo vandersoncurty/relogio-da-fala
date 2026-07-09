@@ -4,3 +4,4 @@ _pycache__/
 .vscode/
 .venv/
 .pytest_cache/
+arquivos_apoio/
