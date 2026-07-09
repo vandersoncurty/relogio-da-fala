@@ -9,9 +9,6 @@
 // CONFIGURAÇÕES
 // ============================================================
 
-// Tamanho base do canvas (será escalado)
-const CANVAS_TAMANHO_BASE = 600;
-
 const CONFIG = {
     raio: 220,
     raioSimbolo: 185,
@@ -182,8 +179,6 @@ let imagensPictogramas = {};
 // INICIALIZAÇÃO
 // ============================================================
 
-let escala = 1;
-
 document.addEventListener('DOMContentLoaded', () => {
     canvas = document.getElementById('clockCanvas');
     ctx = canvas.getContext('2d');
@@ -244,30 +239,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function configurarCanvas() {
     const container = canvas.parentElement;
-    const containerWidth = container.clientWidth - 40; // padding
-    const tamanho = Math.min(containerWidth, 600);
-    
-    // Definir tamanho do canvas
+    const estilo = getComputedStyle(container);
+    const paddingLeft = parseFloat(estilo.paddingLeft);
+    const paddingRight = parseFloat(estilo.paddingRight);
+    const contentWidth = container.clientWidth - paddingLeft - paddingRight;
+    const tamanho = Math.min(contentWidth, 700);
+
     canvas.style.width = tamanho + 'px';
     canvas.style.height = tamanho + 'px';
-    
-    // DPI para nitidez
+
     const dpr = window.devicePixelRatio || 1;
     canvas.width = tamanho * dpr;
     canvas.height = tamanho * dpr;
     ctx.scale(dpr, dpr);
-    
-    // Calcular escala
-    escala = tamanho / CANVAS_TAMANHO_BASE;
-    
-    // Atualizar CONFIG com base na escala
-    CONFIG.raio = 220 * escala;
-    CONFIG.raioSimbolo = 185 * escala;
-    CONFIG.raioPonteiro1 = 140 * escala;
-    CONFIG.raioPonteiro2 = 200 * escala;
-    CONFIG.centroX = 300 * escala;
-    CONFIG.centroY = 300 * escala;
-    CONFIG.raioClique = 30 * escala;
+
+    const metade = tamanho / 2;
+
+    CONFIG.centroX = metade;
+    CONFIG.centroY = metade;
+    CONFIG.raio = metade * 0.82;
+    CONFIG.raioSimbolo = metade * 0.70;
+    CONFIG.raioPonteiro1 = metade * 0.55;
+    CONFIG.raioPonteiro2 = metade * 0.78;
+    CONFIG.raioClique = metade * 0.11;
 }
 
 // ============================================================
@@ -309,19 +303,18 @@ function desenhar() {
 }
 
 function desenharFundo() {
-    // Círculo externo
+    const extra = CONFIG.raio * 0.09;
     ctx.beginPath();
-    ctx.arc(CONFIG.centroX, CONFIG.centroY, CONFIG.raio + 20 * escala, 0, Math.PI * 2);
+    ctx.arc(CONFIG.centroX, CONFIG.centroY, CONFIG.raio + extra, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(30, 41, 59, 0.5)';
     ctx.fill();
-    
-    // Círculo interno
+
     ctx.beginPath();
     ctx.arc(CONFIG.centroX, CONFIG.centroY, CONFIG.raio, 0, Math.PI * 2);
     ctx.fillStyle = CONFIG.cores.fundo;
     ctx.fill();
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-    ctx.lineWidth = 2 * escala;
+    ctx.lineWidth = CONFIG.raio * 0.009;
     ctx.stroke();
 }
 
@@ -347,10 +340,16 @@ function desenharQuadrantes() {
 }
 
 function desenharSimbolos() {
+    const raioSimbSel = CONFIG.raio * 0.13;
+    const raioSimbNao = CONFIG.raio * 0.11;
+    const espessuraSel = CONFIG.raio * 0.014;
+    const espessuraNao = CONFIG.raio * 0.009;
+    const fontSizeSel = CONFIG.raio * 0.052;
+    const fontSizeNao = CONFIG.raio * 0.047;
+
     for (let i = 1; i <= 16; i++) {
         const { x, y, simbolo, categoria } = SIMBOLOS[i];
-        
-        // Cor baseado na categoria
+
         let cor;
         switch (categoria) {
             case 'SUJEITO':
@@ -369,43 +368,36 @@ function desenharSimbolos() {
             default:
                 cor = CONFIG.cores.texto;
         }
-        
-        // Destaque se selecionado
+
         const selecionado = (i === ponteiro1 || i === ponteiro2);
-        const raio = selecionado ? 28 * escala : 24 * escala;
-        
-        // Círculo do símbolo
+        const raio = selecionado ? raioSimbSel : raioSimbNao;
+
         ctx.beginPath();
         ctx.arc(x, y, raio, 0, Math.PI * 2);
         ctx.fillStyle = selecionado ? cor : 'rgba(30, 41, 59, 0.9)';
         ctx.fill();
         ctx.strokeStyle = cor;
-        ctx.lineWidth = selecionado ? 3 * escala : 2 * escala;
+        ctx.lineWidth = selecionado ? espessuraSel : espessuraNao;
         ctx.stroke();
-        
-        // Modo pictograma: desenhar imagem se disponível
+
         if (modoPictograma && imagensPictogramas[simbolo]) {
             const img = imagensPictogramas[simbolo];
             const imgSize = raio * 1.4;
             ctx.save();
             ctx.beginPath();
-            ctx.arc(x, y, raio - 2 * escala, 0, Math.PI * 2);
+            ctx.arc(x, y, raio - CONFIG.raio * 0.009, 0, Math.PI * 2);
             ctx.clip();
             ctx.drawImage(img, x - imgSize/2, y - imgSize/2, imgSize, imgSize);
             ctx.restore();
         } else {
-            // Modo texto: desenhar palavra
             ctx.fillStyle = selecionado ? '#ffffff' : cor;
-            const fontSize = selecionado ? 11 * escala : 10 * escala;
-            ctx.font = `bold ${fontSize}px Inter, sans-serif`;
+            const fs = selecionado ? fontSizeSel : fontSizeNao;
+            ctx.font = `bold ${fs}px Inter, sans-serif`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            
-            // Ajustar tamanho do texto para símbolos longos
             if (simbolo.length > 5) {
-                ctx.font = `bold ${fontSize * 0.85}px Inter, sans-serif`;
+                ctx.font = `bold ${fs * 0.85}px Inter, sans-serif`;
             }
-            
             ctx.fillText(simbolo, x, y);
         }
     }
@@ -414,38 +406,34 @@ function desenharSimbolos() {
 function desenharPonteiro(angulo, raio, cor, label) {
     const x = CONFIG.centroX + raio * Math.cos(angulo);
     const y = CONFIG.centroY + raio * Math.sin(angulo);
-    
-    // Linha
+
     ctx.beginPath();
     ctx.moveTo(CONFIG.centroX, CONFIG.centroY);
     ctx.lineTo(x, y);
     ctx.strokeStyle = cor;
-    ctx.lineWidth = 3 * escala;
+    ctx.lineWidth = CONFIG.raio * 0.014;
     ctx.lineCap = 'round';
     ctx.stroke();
-    
-    // Ponta
+
     ctx.beginPath();
-    ctx.arc(x, y, 8 * escala, 0, Math.PI * 2);
+    ctx.arc(x, y, CONFIG.raio * 0.037, 0, Math.PI * 2);
     ctx.fillStyle = cor;
     ctx.fill();
-    
-    // Label
+
     ctx.fillStyle = '#ffffff';
-    ctx.font = `bold ${10 * escala}px Inter, sans-serif`;
+    ctx.font = `bold ${CONFIG.raio * 0.047}px Inter, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(label, x, y);
 }
 
 function desenharCentro() {
-    // Círculo central
     ctx.beginPath();
-    ctx.arc(CONFIG.centroX, CONFIG.centroY, 15 * escala, 0, Math.PI * 2);
+    ctx.arc(CONFIG.centroX, CONFIG.centroY, CONFIG.raio * 0.07, 0, Math.PI * 2);
     ctx.fillStyle = '#1e293b';
     ctx.fill();
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-    ctx.lineWidth = 2 * escala;
+    ctx.lineWidth = CONFIG.raio * 0.009;
     ctx.stroke();
 }
 

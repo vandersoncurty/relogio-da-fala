@@ -101,7 +101,7 @@ body::before {
 
 /* Main Content */
 .main-content {
-    max-width: 1400px;
+    max-width: 1600px;
     margin: 0 auto;
     padding: 2rem;
 }
@@ -109,7 +109,7 @@ body::before {
 /* Clock Container */
 .clock-container {
     display: grid;
-    grid-template-columns: 1fr 350px;
+    grid-template-columns: 1fr 320px;
     gap: 2rem;
     align-items: start;
 }
@@ -124,7 +124,7 @@ body::before {
 .clock-wrapper {
     background: var(--bg-card);
     border-radius: var(--radius-lg);
-    padding: 1rem;
+    padding: 1.5rem;
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-lg);
     display: flex;
@@ -135,15 +135,13 @@ body::before {
 }
 
 #clockCanvas {
-    max-width: 100%;
-    height: auto;
     cursor: pointer;
     transition: transform 0.2s ease;
     display: block;
 }
 
 #clockCanvas:hover {
-    transform: scale(1.02);
+    transform: scale(1.01);
 }
 
 /* Control Panel */
