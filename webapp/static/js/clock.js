@@ -390,7 +390,7 @@ function desenharSimbolos() {
             ctx.drawImage(img, x - imgSize/2, y - imgSize/2, imgSize, imgSize);
             ctx.restore();
         } else {
-            ctx.fillStyle = selecionado ? '#ffffff' : cor;
+            ctx.fillStyle = selecionado ? '#0f172a' : '#f8fafc';
             const fs = selecionado ? fontSizeSel : fontSizeNao;
             ctx.font = `bold ${fs}px Inter, sans-serif`;
             ctx.textAlign = 'center';
@@ -417,10 +417,13 @@ function desenharPonteiro(angulo, raio, cor, label) {
 
     ctx.beginPath();
     ctx.arc(x, y, CONFIG.raio * 0.037, 0, Math.PI * 2);
-    ctx.fillStyle = cor;
+    ctx.fillStyle = '#0f172a';
     ctx.fill();
+    ctx.strokeStyle = cor;
+    ctx.lineWidth = CONFIG.raio * 0.018;
+    ctx.stroke();
 
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = '#f8fafc';
     ctx.font = `bold ${CONFIG.raio * 0.047}px Inter, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -544,13 +547,18 @@ function arrastar(x, y) {
 }
 
 function onKeyDown(e) {
-    // Espaço para falar
+    // Espaço para falar — mas não interceptar quando o foco está em um
+    // botão, para preservar a ativação nativa (evita ação dupla)
     if (e.code === 'Space') {
+        if (e.target instanceof Element && e.target.closest('button')) return;
         e.preventDefault();
         falar();
     }
-    
-    // Setas para controlar ponteiros
+
+    // Setas para controlar ponteiros (evita rolagem da página em paralelo)
+    if (e.code.startsWith('Arrow')) {
+        e.preventDefault();
+    }
     if (e.code === 'ArrowLeft') {
         ponteiro1 = ((ponteiro1 - 2 + 16) % 16) + 1;
         anguloPonteiro1 = posicaoParaAngulo(ponteiro1);
@@ -713,7 +721,8 @@ function carregarFrasesRapidas() {
     ];
     
     frasesComuns.forEach(frase => {
-        const chip = document.createElement('div');
+        const chip = document.createElement('button');
+        chip.type = 'button';
         chip.className = 'phrase-chip';
         chip.textContent = frase.texto;
         chip.addEventListener('click', () => {
@@ -760,6 +769,9 @@ function alternarModoPictograma() {
     modoPictograma = !modoPictograma;
     const btn = document.getElementById('togglePictograma');
     btn.classList.toggle('active', modoPictograma);
-    btn.textContent = modoPictograma ? '📝 Texto' : '🖼️ Pictogramas';
+    btn.setAttribute('aria-pressed', String(modoPictograma));
+    btn.innerHTML = modoPictograma
+        ? '<span aria-hidden="true">📝</span> Texto'
+        : '<span aria-hidden="true">🖼️</span> Pictogramas';
     desenhar();
 }

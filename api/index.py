@@ -16,7 +16,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from flask import Flask, render_template, jsonify, request, send_file
 from gramatica import POSICOES_PLACA, COMBINACOES_VALIDAS, TRADUCAO, obter_frase
 
-app = Flask(__name__)
+# Raiz do projeto/bundle. O bundle do Vercel NÃO inclui public/ (é o
+# outputDirectory), mas inclui webapp/ — apontamos os templates para lá
+# de forma absoluta para funcionar igual no repo e no bundle.
+_RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+app = Flask(__name__, template_folder=os.path.join(_RAIZ, "webapp", "templates"))
 
 # URL da API VLibras
 VLBRAS_API_URL = "https://traducao2.vlibras.gov.br/translate"

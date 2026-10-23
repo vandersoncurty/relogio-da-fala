@@ -4,30 +4,36 @@
 <div class="clock-container">
     <!-- Canvas do Relógio -->
     <div class="clock-wrapper">
-        <canvas id="clockCanvas" width="700" height="700"></canvas>
+        <canvas id="clockCanvas" width="700" height="700" tabindex="0" role="application"
+                aria-label="Relógio com 16 símbolos de comunicação. Use as setas do teclado: esquerda e direita movem o ponteiro 1, cima e baixo movem o ponteiro 2.">
+            Seu navegador não suporta canvas. Use as frases rápidas ao lado para montar mensagens.
+        </canvas>
     </div>
 
     <!-- Painel de Controle -->
     <div class="control-panel">
         <!-- Toggle Modo Pictograma -->
         <div class="toggle-section">
-            <button class="toggle-btn" id="togglePictograma">🖼️ Pictogramas</button>
-            <span class="toggle-label">Mostrar imagens ARASAAC</span>
+            <button type="button" class="toggle-btn" id="togglePictograma"
+                    aria-pressed="false" aria-describedby="togglePictogramaLabel">
+                <span aria-hidden="true">🖼️</span> Pictogramas
+            </button>
+            <span class="toggle-label" id="togglePictogramaLabel">Mostrar imagens ARASAAC</span>
         </div>
 
         <!-- Mensagem Atual -->
         <div class="message-card" id="messageCard">
             <div class="message-label">Mensagem Selecionada</div>
-            <div class="message-text" id="messageText" data-vlibras>Selecione dois símbolos</div>
-            <div class="message-status" id="messageStatus">
-                <span class="status-dot"></span>
+            <div class="message-text" id="messageText" data-vlibras aria-live="polite" aria-atomic="true">Selecione dois símbolos</div>
+            <div class="message-status" id="messageStatus" role="status">
+                <span class="status-dot" aria-hidden="true"></span>
                 <span class="status-text">Aguardando</span>
             </div>
         </div>
 
         <!-- Botão de Voz -->
-        <button class="voice-btn" id="voiceBtn" disabled>
-            <svg class="voice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <button type="button" class="voice-btn" id="voiceBtn" disabled>
+            <svg class="voice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
                 <path d="M11 5L6 9H2v6h4l5 4V5z"/>
                 <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
             </svg>
@@ -36,10 +42,11 @@
 
         <!-- Instruções -->
         <div class="instructions">
-            <h3>Como usar</h3>
+            <h2>Como usar</h2>
             <ul>
                 <li><strong>Ponteiro 1 (azul):</strong> Clique em um símbolo</li>
                 <li><strong>Ponteiro 2 (vermelho):</strong> Clique em outro símbolo</li>
+                <li><strong>Teclado:</strong> <kbd>←</kbd>/<kbd>→</kbd> move o ponteiro 1, <kbd>↑</kbd>/<kbd>↓</kbd> move o ponteiro 2</li>
                 <li><strong>Voz:</strong> Pressione o botão ou <kbd>Espaço</kbd></li>
                 <li><strong>Libras:</strong> Clique no ícone 🤟 (canto inferior direito) e depois clique na mensagem acima</li>
                 <li><strong>Pictogramas:</strong> Clique no botão 🖼️ para ver imagens ARASAAC</li>
@@ -48,22 +55,22 @@
 
         <!-- Legenda -->
         <div class="legend">
-            <h3>Categorias</h3>
+            <h2>Categorias</h2>
             <div class="legend-items">
                 <div class="legend-item">
-                    <span class="legend-color" style="background: #3b82f6;"></span>
+                    <span class="legend-color" style="background: #3b82f6;" aria-hidden="true"></span>
                     <span>Sujeitos</span>
                 </div>
                 <div class="legend-item">
-                    <span class="legend-color" style="background: #22c55e;"></span>
+                    <span class="legend-color" style="background: #22c55e;" aria-hidden="true"></span>
                     <span>Verbos</span>
                 </div>
                 <div class="legend-item">
-                    <span class="legend-color" style="background: #f97316;"></span>
+                    <span class="legend-color" style="background: #f97316;" aria-hidden="true"></span>
                     <span>Objetos</span>
                 </div>
                 <div class="legend-item">
-                    <span class="legend-color" style="background: #a855f7;"></span>
+                    <span class="legend-color" style="background: #a855f7;" aria-hidden="true"></span>
                     <span>Emoções</span>
                 </div>
             </div>
@@ -71,7 +78,7 @@
 
         <!-- Combinações Rápidas -->
         <div class="quick-phrases">
-            <h3>Frases Rápidas</h3>
+            <h2>Frases Rápidas</h2>
             <div class="phrase-chips" id="phraseChips">
                 <!-- Preenchido via JavaScript -->
             </div>

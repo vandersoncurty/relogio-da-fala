@@ -11,11 +11,13 @@
     --bg-glass: rgba(255, 255, 255, 0.05);
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
-    --text-muted: #64748b;
+    --text-muted: #8090a6;
     --accent-blue: #3b82f6;
+    --accent-blue-deep: #2563eb;
     --accent-green: #22c55e;
     --accent-orange: #f97316;
     --accent-purple: #a855f7;
+    --accent-purple-deep: #7e22ce;
     --accent-red: #ef4444;
     --border-color: rgba(255, 255, 255, 0.1);
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
@@ -176,13 +178,13 @@ body::before {
 }
 
 .toggle-btn:hover {
-    background: var(--accent-blue);
+    background: var(--accent-blue-deep);
     color: white;
-    border-color: var(--accent-blue);
+    border-color: var(--accent-blue-deep);
 }
 
 .toggle-btn.active {
-    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    background: linear-gradient(135deg, var(--accent-blue-deep), var(--accent-purple-deep));
     color: white;
     border-color: transparent;
 }
@@ -263,7 +265,7 @@ body::before {
     justify-content: center;
     gap: 0.75rem;
     padding: 1rem 1.5rem;
-    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    background: linear-gradient(135deg, var(--accent-blue-deep), var(--accent-purple-deep));
     border: none;
     border-radius: var(--radius-md);
     color: white;
@@ -310,7 +312,7 @@ body::before {
     border: 1px solid var(--border-color);
 }
 
-.instructions h3 {
+.instructions h2 {
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--text-primary);
@@ -327,6 +329,7 @@ body::before {
     padding: 0.375rem 0;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 0.5rem;
 }
 
@@ -353,7 +356,7 @@ kbd {
     border: 1px solid var(--border-color);
 }
 
-.legend h3 {
+.legend h2 {
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--text-primary);
@@ -388,7 +391,7 @@ kbd {
     border: 1px solid var(--border-color);
 }
 
-.quick-phrases h3 {
+.quick-phrases h2 {
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--text-primary);
@@ -405,17 +408,21 @@ kbd {
     background: var(--bg-glass);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-full);
-    padding: 0.375rem 0.75rem;
+    padding: 0.5rem 0.875rem;
+    font-family: inherit;
     font-size: 0.75rem;
+    line-height: 1.4;
     color: var(--text-secondary);
     cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
     transition: var(--transition);
 }
 
 .phrase-chip:hover {
-    background: var(--accent-blue);
+    background: var(--accent-blue-deep);
     color: white;
-    border-color: var(--accent-blue);
+    border-color: var(--accent-blue-deep);
 }
 
 /* Footer */
@@ -517,4 +524,28 @@ kbd {
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--text-secondary);
+}
+
+/* Foco visível (navegação por teclado) */
+button:focus-visible,
+.phrase-chip:focus-visible {
+    outline: 3px solid var(--text-primary);
+    outline-offset: 2px;
+}
+
+#clockCanvas:focus-visible {
+    outline: 3px solid var(--text-primary);
+    /* offset negativo: o wrapper usa overflow:hidden e cortaria o contorno */
+    outline-offset: -5px;
+}
+
+/* Respeitar preferência por menos animação */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }
