@@ -7,3 +7,13 @@ _pycache__/
 arquivos_apoio/
 .vercel
 .env*
+
+# Gerados pela ferramenta Vercel+uv no build (não versionar)
+pyproject.toml
+uv.lock
+.python-version
+
+# Dependências/ferramentas npm locais (o projeto é Python)
+node_modules/
+package.json
+package-lock.json
